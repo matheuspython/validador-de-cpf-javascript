@@ -1,58 +1,49 @@
-const cpf = "705.484.450-52";
+function ValidaCPF(cpfEnviado) {
+  Object.defineProperty(this, 'cpfLimpo', {
+    get: function() {
+      return cpfEnviado.replace(/\D+/g, '');
+    }
+  });
 
-const cpfTeste = (cpf) => {
-  const observeCpf = cpf.replace(/\D+/g, '');
+}
+
+ValidaCPF.prototype.valida = function () {
+  if(typeof this.cpfLimpo === 'undefined') return false
+  if(this.cpfLimpo.length !== 11) return false
+  if(this.isSequencia()) return false
+
+  const cpfParcial = this.cpfLimpo.slice(0, -2)
+  const digito1 = this.criaDigito(cpfParcial)
+  const digito2 = this.criaDigito(cpfParcial + digito1)
+
+  const novoCPF = cpfParcial + digito1 + digito2
+
+  return novoCPF === this.cpfLimpo
+};  
+
+ValidaCPF.prototype.criaDigito = function(cpfParcial){
+  const cpfArray = Array.from(cpfParcial);
   
-  const newCpf = Array.from(observeCpf)
-  newCpf.splice(-2, 2)
+  let regressivo = cpfArray.length + 1;
+  let total = cpfArray.reduce((ac, val) => {
+    ac += (regressivo * Number(val))
+    regressivo--;
+    return ac;
+  }, 0)
+  
+  const digito = 11 - (total % 11);
 
-  return newCpf
+
+  return digito > 9 ? '0' : String(digito);
+}
+
+ValidaCPF.prototype.isSequencia = function() {
+ const sequencia = this.cpfLimpo[0].repeat(this.cpfLimpo.length)
+
+ return sequencia === this.cpfLimpo
 };
 
+const cpf = new ValidaCPF('705.484.450-52')
 
-const transformaNumber = (arr) => {
-  return  arr.reduce((ac, value) => ac + Number(value))
-}
-
-const calculoPrimeiroESegundoNumero = (cpf, count,count2) => {
-
-  const cpfprimeironumero = cpf.map(value => {
-    value = value * count
-    count-- 
-    return value
-  }).reduce((ac, value) => ac + value)
-
-  const primeiro = 11-(cpfprimeironumero % 11)
-
-  cpf.push(primeiro)
-
-
-  const segundoNumero = cpf.map(value => {
-    value = value * (count2)
-    count2--
-    return value
-  }).reduce((ac, value) => ac+ value)
-
-  const segundo = 11-(segundoNumero % 11)
-
-  cpf.push(segundo)
-  
-  return  cpf 
-}
-
-const testandoCpf = cpfTeste(cpf); 
-
-const fcpf = transformaNumber(calculoPrimeiroESegundoNumero(testandoCpf, 10,11))
-
-
-if(cpf.replace(/\D+/g, '') === fcpf) {
-  return console.log('o cpf esta correto')
-}
-
-console.log('o cpf esta errado')
-
-
-
-
-
+console.log(cpf.valida())
 
